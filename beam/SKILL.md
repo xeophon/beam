@@ -1,18 +1,18 @@
 ---
 name: beam
-description: Use this skill to move an active local coding session and directory onto a new remote machine. This remote machine can also have GPUs.
+description: "Provision remote Prime Intellect pods (CPU or GPU), rsync the local project directory, and sync coding-CLI auth and state so an SSH session can resume work. Use when migrating a coding session to a remote server, deploying to a cloud GPU instance, or handing off local development to a remote machine."
 ---
 # Beam Handoff Skill
 
-Use this skill to move an active agentic local coding session to a new remote machine. This skill also installs the given CLI(s) on said machine, as well as tmux and uv.
+Provisions Prime Intellect pods, rsyncs the current project, and syncs coding-CLI config (Codex, Kimi, OpenCode, Pi, Claude Code, Amp) so work continues seamlessly over SSH.
 
 ## Goal
 
-- Create pod(s)
-- Ensure remote tooling (`tmux`, `uv`, selected coding CLIs)
-- Mirror project path
-- Sync CLI state
-- Return SSH command + remote directory
+- Create pod(s) via `prime pods create`
+- Install remote tooling (`tmux`, `uv`, selected coding CLIs via npm)
+- Mirror the local project path to the same absolute path on the pod
+- Sync CLI config and auth tokens (unless `--skip-auth`)
+- Return SSH command, remote project directory, and pod metadata
 
 ## Primary Command
 
@@ -64,7 +64,9 @@ uv run beam.py --kind cpu --vcpus 4 --memory 16 --disk-size 200 --clis codex
 
 ## Execution Checklist
 
-1. Confirm Prime is authenticated (`prime whoami`).
-2. Run `uv run beam.py ...` with desired params.
-3. Wait for summary output.
-4. Return the summary to the user.
+1. Confirm Prime is authenticated: `prime whoami`. If it fails, install with `uv tool install prime` and log in.
+2. Verify local `rsync` and `ssh` are available.
+3. Run `uv run beam.py ...` with desired params.
+4. Wait for the `=== Prime Handoff Complete ===` summary.
+5. Return the summary to the user. It includes: pod ID, SSH command, remote project directory, copied CLIs, provider, location, and hourly price.
+6. Remind the user to terminate pods when done: `prime pods terminate <pod_id>`.
